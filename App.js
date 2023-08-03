@@ -14,6 +14,7 @@ import { CardField, useStripe } from '@stripe/stripe-react-native';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import * as MailComposer from 'expo-mail-composer';
 import * as SMS from 'expo-sms';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 
@@ -263,6 +264,7 @@ export default function App() {
         const [contactCount, setContactCount] = useState([]);
         const [isContributorsModalVisible, setIsContributorsModalVisible] = useState(false);
         const [totalAmount, setTotalAmount] = useState(0);
+        const [deliveryDate, setDeliveryDate ] = useState(null);
 
 
         const [userInfo, setUserInfo] = useState(null);
@@ -279,9 +281,25 @@ export default function App() {
           }),
         });
 
+
         const [prompt1, setPrompt1] = useState('');
         const [prompt2, setPrompt2] = useState('');
         const [prompt3, setPrompt3] = useState('');
+        const [date, setDate] = useState(new Date());
+        const [show, setShow] = useState(false);
+      
+        const futureDate = new Date();
+        if (physicalBook) {
+          futureDate.setDate(futureDate.getDate() + 14);
+        } else {
+          futureDate.setDate(futureDate.getDate() + 7);
+        }
+      
+        const onChange = (event, selectedDate) => {
+          const currentDate = selectedDate || date;
+          setShow(Platform.OS === 'ios');
+          setDate(currentDate);
+        };
       
         const placeholderName = recipientFullName || 'your recipient';
 
@@ -726,7 +744,15 @@ useEffect(() => {
           setEditingStudent({ ...record });
         };
         
+        const handleEmail = () => {
+          submitAndSendWelcomeMessageEmail(tableData);
+    
+        }
         
+        const handleSMS = () => {
+          submitAndSendWelcomeMessageSMS(tableData);
+    
+        }
 
         const handleOk = async () => {
           setIsModalVisible(false);
@@ -770,7 +796,6 @@ useEffect(() => {
         const handleCancel = () => {
           setIsModalVisible(false);
         };
-
         async function submitAndSendWelcomeMessageEmail(contributors) {
           // Calculate the total amount to charge
           let totalAmount = 0;
@@ -785,7 +810,7 @@ useEffect(() => {
           if (totalAmount > 0) {
             if (hasPaid) {
               // If the user has paid, send the welcome email directly
-              sendWelcomeEmail(contributors);
+              return sendWelcomeEmail(contributors);
             } else {
               // If the user hasn't paid, open the payment modal
               setTotalAmount(totalAmount);
@@ -793,73 +818,83 @@ useEffect(() => {
             }
           } else {
             // If there's no charge, send the welcome email directly
-            sendWelcomeEmail(contributors);
+            return sendWelcomeEmail(contributors);
           }
         }
-      
-            async function submitAndSendWelcomeMessageSMS(contributors) {
-              // Calculate the total amount to charge
-              let totalAmount = 0;
-              if (physicalBook) {
-                totalAmount += 9900; // $99 in cents
-              }
-              if (includeAudio) {
-                totalAmount += 1500; // $15 in cents
-              }
-              
-              // If there's a charge, check if the user has paid
-              if (totalAmount > 0) {
-                if (hasPaid) {
-                  // If the user has paid, send the welcome SMS directly
-                  sendWelcomeSMS(contributors);
-                } else {
-                  // If the user hasn't paid, open the payment modal
-                  setTotalAmount(totalAmount);
-                  setIsPaymentModalVisible(true);
-                }
-              } else {
-                // If there's no charge, send the welcome SMS directly
-                sendWelcomeSMS(contributors);
-              }
+        
+        async function submitAndSendWelcomeMessageSMS(contributors) {
+          // Calculate the total amount to charge
+          let totalAmount = 0;
+          if (physicalBook) {
+            totalAmount += 9900; // $99 in cents
+          }
+          if (includeAudio) {
+            totalAmount += 1500; // $15 in cents
+          }
+          
+          // If there's a charge, check if the user has paid
+          if (totalAmount > 0) {
+            if (hasPaid) {
+              // If the user has paid, send the welcome SMS directly
+              return sendWelcomeSMS(contributors);
+            } else {
+              // If the user hasn't paid, open the payment modal
+              setTotalAmount(totalAmount);
+              setIsPaymentModalVisible(true);
             }
-
-                async function sendWelcomeEmail(contributors) {
-                  // Prepare a group email for all contributors with an email address
-                  const emails = contributors.flatMap(contributor => contributor.emailAddresses || []).map(emailObj => emailObj.value);
-                  if (emails.length > 0) {
-                    const mailOptions = {
-                      recipients: emails,
-                      subject: 'Welcome to the project!',
-                      body: 'Thank you for contributing to our project. We appreciate your support!',
-                    };
-                    const isAvailable = await MailComposer.isAvailableAsync();
-                    if (isAvailable) {
-                      MailComposer.composeAsync(mailOptions).catch(err => console.error('Failed to send email:', err));
-                    } else {
-                      console.error('Mail is not available');
-                    }
-                  }
-                }
-                
-                async function sendWelcomeSMS(contributors) {
-                  // Prepare a group SMS for all contributors with a phone number
-                  const phones = contributors
-                    .map(contributor => contributor.phoneNumber.replace(/\D/g, ''))  // remove non-digit characters
-                    .filter(phone => phone);
-                  if (phones.length > 0) {
-                    const isAvailable = await SMS.isAvailableAsync();
-                    if (isAvailable) {
-                      try {
-                        await SMS.sendSMSAsync(phones, 'Thank you for contributing to our project. We appreciate your support!');
-                      } catch (err) {
-                        console.error('Failed to send SMS:', err);
-                      }
-                    } else {
-                      console.error('SMS is not available');
-                    }
-                  }
-                }
-
+          } else {
+            // If there's no charge, send the welcome SMS directly
+            return sendWelcomeSMS(contributors);
+          }
+        }
+        async function sendWelcomeEmail(contributors) {
+          // Prepare a group email for all contributors with an email address
+          const emails = contributors.flatMap(contributor => contributor.emailAddresses || []).map(emailObj => emailObj.value);
+          if (emails.length > 0) {
+            const mailOptions = {
+              recipients: emails,
+              subject: 'Welcome to the project!',
+              body: 'Thank you for contributing to our project. We appreciate your support!',
+            };
+            const isAvailable = await MailComposer.isAvailableAsync();
+            if (isAvailable) {
+              try {
+                await MailComposer.composeAsync(mailOptions);
+                return true;
+              } catch (err) {
+                console.error('Failed to send email:', err);
+                return false;
+              }
+            } else {
+              console.error('Mail is not available');
+              return false;
+            }
+          }
+          return false;
+        }
+        
+        async function sendWelcomeSMS(contributors) {
+          // Prepare a group SMS for all contributors with a phone number
+          const phones = contributors
+            .map(contributor => contributor.phoneNumber.replace(/\D/g, ''))  // remove non-digit characters
+            .filter(phone => phone);
+          if (phones.length > 0) {
+            const isAvailable = await SMS.isAvailableAsync();
+            if (isAvailable) {
+              try {
+                await SMS.sendSMSAsync(phones, 'Thank you for contributing to our project. We appreciate your support!');
+                return true;
+              } catch (err) {
+                console.error('Failed to send SMS:', err);
+                return false;
+              }
+            } else {
+              console.error('SMS is not available');
+              return false;
+            }
+          }
+          return false;
+        }
              
  
         // async function submitAndSendWelcomeMessage(contributors) {
@@ -1177,6 +1212,27 @@ useEffect(() => {
                           placeholder="Your recipient's full name"
                       />
                   </View>
+                  <View style={styles.inputContainer}>
+
+                  <View style={styles.buttonContainer}>
+        
+                      <TouchableOpacity style={styles.button} onPress={() => setShow(true)}> 
+                      <Text style={styles.buttonText}>Select Delivery Date </Text>
+                      </TouchableOpacity>
+    
+                      {show && (
+                        <DateTimePicker
+                          testID="dateTimePicker"
+                          value={date}
+                          mode={'date'}
+                          is24Hour={true}
+                          display="default"
+                          onChange={onChange}
+                          minimumDate={futureDate}
+                        />
+                      )}
+                    </View>
+              </View>
 
                   <View style={styles.inputContainer}>
 
@@ -1209,7 +1265,7 @@ useEffect(() => {
                   </View>
                 </View>
 
-                  <View style={styles.container}>
+                  <View style={styles.buttonContainer}>
                 
                     <TouchableOpacity  style={styles.button} onPress={() => setIsContributorsModalVisible(true)}>
                       <Text style={styles.buttonText} >View selected contributors ({tableData.length})</Text>
@@ -1281,30 +1337,35 @@ useEffect(() => {
    {(hasPaid || (!physicalBook && !includeAudio)) && (
               <>
                   { hasEmails && ( 
+                    <View style={styles.buttonContainer}>
                       <TouchableOpacity 
                           style={styles.button} 
-                          onPress={() => submitAndSendWelcomeMessageEmail(tableData)}
+                          onPress={handleEmail}
                       >
                           <Text style={styles.buttonText}>
                               Email welcome message to selected contributors
                           </Text>
                       </TouchableOpacity>
+                      </View>
                   )}
        
                   { hasPhoneNumbers && ( 
+                    <View style={styles.buttonContainer}>
                       <TouchableOpacity 
                           style={styles.button} 
-                          onPress={() => submitAndSendWelcomeMessageSMS(tableData)}
+                          onPress={handleSMS}
                       >
                           <Text style={styles.buttonText}>
                               Text welcome message to selected contributors
                           </Text>
                       </TouchableOpacity>
+                  </View>
                   )}
               </>
           )} 
 
           {(!hasPaid && (physicalBook || includeAudio)) && (
+            <View style={styles.buttonContainer}>
               <TouchableOpacity 
                   style={styles.button} 
                   onPress={handleCheckOut}
@@ -1313,6 +1374,7 @@ useEffect(() => {
                       Check out
                   </Text>
               </TouchableOpacity>
+            </View>
           )}
 
           </View>
@@ -1345,13 +1407,6 @@ const styles = StyleSheet.create({
   cardField: {
     height: 50,
     marginTop: 30,
-    width: '100%',
-  },
-  button: {
-    backgroundColor: '#007BFF',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
     width: '100%',
   },
   textStyle: {
@@ -1424,6 +1479,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 5,
     marginTop: 5,
+    width: 200
   },
   buttonText: {
     color: 'white',
