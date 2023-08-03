@@ -206,8 +206,8 @@ const { makeRedirectUri } = AuthSession;
 
 export default function App() {
 
-        const [message, setMessage] = useState("We are creating a book of supportive letters and nice pictures (or 'Bundl') for Dan G. It will only take you a minute to write and submit your letter. It should make for an unforgettable gift that shares our collective love and appreciation. Don't be the last to submit!");
-        const [parsedData, setParsedData] = useState([]);
+  const [message, setMessage] = useState('');
+  const [parsedData, setParsedData] = useState([]);
         const [userID, setUserID] = useState(null);
         const [isModalVisible, setIsModalVisible] = useState(false);
         const [notes, setNotes] = useState("");
@@ -287,6 +287,7 @@ export default function App() {
         const [prompt3, setPrompt3] = useState('');
         const [date, setDate] = useState(new Date());
         const [show, setShow] = useState(false);
+        const [ userId, setUserId] = useState(null)
       
         const futureDate = new Date();
         if (physicalBook) {
@@ -306,6 +307,61 @@ export default function App() {
 
         // Get the screen's height
 const screenHeight = Dimensions.get('window').height
+useEffect(() => {
+  async function createUserAndBook() {
+    try {
+      // Create a new user
+      let response = await fetch('https://yay-api.herokuapp.com/users/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'new_user',
+          name: 'New User',
+        }),
+      });
+      let data = await response.json();
+
+      // Save the user's ID
+      const newUserId = data._id;
+      console.log('userId :', data._id)
+      setUserId(newUserId);
+
+      // Create a new book for the user
+      response = await fetch('https://yay-api.herokuapp.com/book/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: newUserId,
+        }),
+      });
+
+      // Check if the book was created successfully
+      if (!response.ok) {
+        throw new Error('Failed to create book');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  createUserAndBook();
+}, []);
+
+useEffect(() => {
+  if (userId) {
+    setMessage(`I am building a book of supportive letters and nice pictures for ${recipientFullName}. It will only take you a minute to write and submit your letter. You can use this link to write in: https://www.givebundl.com/contribute/${userId} and keep an eye out for reminder emails from dan@givebundl.com. Thank you!! Want to make this a special gift for ${recipientFullName}.`);
+  }
+}, [userId]);
+
+useEffect(() => {
+  if (recipientFullName) {
+    setMessage(`I am building a book of supportive letters and nice pictures for ${recipientFullName}. It will only take you a minute to write and submit your letter. You can use this link to write in: https://www.givebundl.com/contribute/${userId} and keep an eye out for reminder emails from dan@givebundl.com. Thank you!! Want to make this a special gift for ${recipientFullName}.`);
+  }
+}, [recipientFullName]);
 
     useEffect(() => {
       console.log('hasPaid:', hasPaid);
@@ -853,8 +909,8 @@ useEffect(() => {
           if (emails.length > 0) {
             const mailOptions = {
               recipients: emails,
-              subject: 'Welcome to the project!',
-              body: 'Thank you for contributing to our project. We appreciate your support!',
+              subject: 'Gift for ' + recipientFullName,
+              body: message,
             };
             const isAvailable = await MailComposer.isAvailableAsync();
             if (isAvailable) {
@@ -882,7 +938,7 @@ useEffect(() => {
             const isAvailable = await SMS.isAvailableAsync();
             if (isAvailable) {
               try {
-                await SMS.sendSMSAsync(phones, 'Thank you for contributing to our project. We appreciate your support!');
+                await SMS.sendSMSAsync(phones, message);
                 return true;
               } catch (err) {
                 console.error('Failed to send SMS:', err);
