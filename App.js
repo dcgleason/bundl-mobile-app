@@ -906,6 +906,7 @@ useEffect(() => {
         async function sendWelcomeEmail(contributors) {
           // Prepare a group email for all contributors with an email address
           const emails = contributors.flatMap(contributor => contributor.emailAddresses || []).map(emailObj => emailObj.value);
+          
           if (emails.length > 0) {
             const mailOptions = {
               recipients: emails,
@@ -913,9 +914,42 @@ useEffect(() => {
               body: message,
             };
             const isAvailable = await MailComposer.isAvailableAsync();
+            
             if (isAvailable) {
               try {
                 await MailComposer.composeAsync(mailOptions);
+        
+                // Call the API to update the book
+                const bookResponse = await fetch(`https://yay-api.herokuapp.com/users/${userId}/firstUpdate`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    rec_name: recipientFullName,
+                    rec_first_name: recipientFullName.split(' ')[0],
+                    introNote: message,
+                    contributors: contributors  // 'contributors' should be an array of objects with 'email' and 'phone' propertie
+             
+                  }),
+                });
+                
+                // Call the API to update the user
+                const userResponse = await fetch(`https://yay-api.herokuapp.com/${userId}/updateUser`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    name: gifterFullName,
+                    rec_name: recipientFullName,
+                    rec_first_name: recipientFullName.split(' ')[0],
+                    prompts: [prompt1, prompt2, prompt3],
+                    introNote: message,
+                    giftOwnerEmail: gifterEmail // replace 'userEmail' with the actual variable for the user's email
+                  }),
+                });
+        
                 return true;
               } catch (err) {
                 console.error('Failed to send email:', err);
@@ -934,11 +968,44 @@ useEffect(() => {
           const phones = contributors
             .map(contributor => contributor.phoneNumber.replace(/\D/g, ''))  // remove non-digit characters
             .filter(phone => phone);
+          
           if (phones.length > 0) {
             const isAvailable = await SMS.isAvailableAsync();
+            
             if (isAvailable) {
               try {
                 await SMS.sendSMSAsync(phones, message);
+                
+                // Call the API to update the book
+                const bookResponse = await fetch(`https://yay-api.herokuapp.com/users/${userId}/firstUpdate`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    rec_name: recipientFullName,
+                    rec_first_name: recipientFullName.split(' ')[0],
+                    introNote: message,
+                    contributors: contributors  // 'contributors' should be an array of objects with 'email' and 'phone' properties
+                  }),
+                });
+                
+                // Call the API to update the user
+                const userResponse = await fetch(`https://yay-api.herokuapp.com/${userId}/updateUser`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    name: gifterFullName,
+                    rec_name: recipientFullName,
+                    rec_first_name: recipientFullName.split(' ')[0],
+                    prompts: [prompt1, prompt2, prompt3],
+                    introNote: message,
+                    giftOwnerEmail: gifterEmail // replace 'userEmail' with the actual variable for the user's email
+                  }),
+                });
+                
                 return true;
               } catch (err) {
                 console.error('Failed to send SMS:', err);
@@ -951,6 +1018,7 @@ useEffect(() => {
           }
           return false;
         }
+        
              
  
         // async function submitAndSendWelcomeMessage(contributors) {
