@@ -353,13 +353,13 @@ useEffect(() => {
 
 useEffect(() => {
   if (userId) {
-    setMessage(`I am building a book of supportive letters and nice pictures for ${recipientFullName}. It will only take you a minute to write and submit your letter. You can use this link to write in: https://www.givebundl.com/contribute/${userId} and keep an eye out for reminder emails from dan@givebundl.com. Thank you!! Want to make this a special gift for ${recipientFullName}.`);
+    setMessage(`I am building a book of supportive letters and nice pictures for ${recipientFullName}. It will only take you a minute to write and submit your letter. You can use this link to write in: https://www.givebundl.com/contribute/${userId} and keep an eye out for reminder emails from dan@givebundl.com. Thank you!! Want to make this a special gift for ${recipientFullName.split(' ')[0]}.`);
   }
 }, [userId]);
 
 useEffect(() => {
   if (recipientFullName) {
-    setMessage(`I am building a book of supportive letters and nice pictures for ${recipientFullName}. It will only take you a minute to write and submit your letter. You can use this link to write in: https://www.givebundl.com/contribute/${userId} and keep an eye out for reminder emails from dan@givebundl.com. Thank you!! Want to make this a special gift for ${recipientFullName}.`);
+    setMessage(`I am building a book of supportive letters and nice pictures for ${recipientFullName}. It will only take you a minute to write and submit your letter. You can use this link to write in: https://www.givebundl.com/contribute/${userId} and keep an eye out for reminder emails from dan@givebundl.com. Thank you!! Want to make this a special gift for ${recipientFullName.split(' ')[0]}.`);
   }
 }, [recipientFullName]);
 
@@ -920,7 +920,7 @@ useEffect(() => {
                 await MailComposer.composeAsync(mailOptions);
         
                 // Call the API to update the book
-                const bookResponse = await fetch(`https://yay-api.herokuapp.com/users/${userId}/firstUpdate`, {
+                const bookResponse = await fetch(`https://yay-api.herokuapp.com/book/${userId}/firstUpdate`, {
                   method: 'PUT',
                   headers: {
                     'Content-Type': 'application/json',
@@ -935,7 +935,7 @@ useEffect(() => {
                 });
                 
                 // Call the API to update the user
-                const userResponse = await fetch(`https://yay-api.herokuapp.com/${userId}/updateUser`, {
+                const userResponse = await fetch(`https://yay-api.herokuapp.com/users/${userId}/updateUser`, {
                   method: 'PUT',
                   headers: {
                     'Content-Type': 'application/json',
@@ -977,7 +977,7 @@ useEffect(() => {
                 await SMS.sendSMSAsync(phones, message);
                 
                 // Call the API to update the book
-                const bookResponse = await fetch(`https://yay-api.herokuapp.com/users/${userId}/firstUpdate`, {
+                const bookResponse = await fetch(`https://yay-api.herokuapp.com/book/${userId}/firstUpdate`, {
                   method: 'PUT',
                   headers: {
                     'Content-Type': 'application/json',
@@ -991,7 +991,7 @@ useEffect(() => {
                 });
                 
                 // Call the API to update the user
-                const userResponse = await fetch(`https://yay-api.herokuapp.com/${userId}/updateUser`, {
+                const userResponse = await fetch(`https://yay-api.herokuapp.com/users/${userId}/updateUser`, {
                   method: 'PUT',
                   headers: {
                     'Content-Type': 'application/json',
