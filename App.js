@@ -963,6 +963,7 @@ useEffect(() => {
                       introNote: message,
                       contributors: contributors,
                       deliveryDate: deliveryDate,
+                      physicalBook: physicalBook
                     }),
                   });
                   
@@ -1025,6 +1026,7 @@ useEffect(() => {
                       introNote: message,
                       contributors: contributors,
                       deliveryDate: deliveryDate,
+                      physicalBook: physicalBook
                     }),
                   });
                   
