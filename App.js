@@ -19,7 +19,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 
-function PaymentModal({ isModalVisible, setIsModalVisible, totalAmount, gifterEmail, setHasPaid }) {
+function PaymentModal({ isModalVisible, setIsModalVisible, totalAmount, gifterEmail, setHasPaid, physicalBook, setCity, setState, setZipCode, setStreetAddress }) {
   const { createPaymentMethod, confirmPayment } = useStripe();
   const [isApplePaySupported, setIsApplePaySupported] = useState(false);
   const [cardDetails, setCardDetails] = useState(null);
@@ -140,58 +140,84 @@ function PaymentModal({ isModalVisible, setIsModalVisible, totalAmount, gifterEm
           </View>
         </Modal>
     
-  <StripeProvider
-      publishableKey="pk_test_51KtCf1LVDYVdzLHCzEQuGuw08kKelgXO7AgN6VDN874gIPxfr7dl7PvcNgUZUSnypEOxqJcMCu4G119l0MQixCkj00Rr1fOuls"
-      urlScheme="com.googleusercontent.apps.764289968872-8spc0amg0j9n4lqjs0rr99s75dmmkpc7" // required for 3D Secure and bank redirects
-      merchantIdentifier="merchant.givebundl" // required for Apple Pay
-    >
-  <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isModalVisible}
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{ 
-            width: '80%', 
-            padding: 20, 
-            backgroundColor: 'white', 
-            borderRadius: 10,
-            borderWidth: 2,  // Add border width
-            borderColor: 'black',  // Change to your desired color
-          }}>
-          <Text>Enter your card details:</Text>
+        <StripeProvider
+            publishableKey="pk_test_51KtCf1LVDYVdzLHCzEQuGuw08kKelgXO7AgN6VDN874gIPxfr7dl7PvcNgUZUSnypEOxqJcMCu4G119l0MQixCkj00Rr1fOuls"
+            urlScheme="com.googleusercontent.apps.764289968872-8spc0amg0j9n4lqjs0rr99s75dmmkpc7"
+            merchantIdentifier="merchant.givebundl"
+        >
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={isModalVisible}
+            onRequestClose={() => setIsModalVisible(false)}
+        >
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ 
+                width: '80%', 
+                padding: 20, 
+                backgroundColor: 'white', 
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: 'black',
+              }}>
+              {
+                physicalBook ? (
+                  <>
+                    <Text>Enter your shipping details:</Text>
+                    <TextInput
+                      placeholder="Street address"
+                      onChangeText={(text) => setStreetAddress(text)}
+                      style={styles.inputField}
+                    />
+                    <TextInput
+                      placeholder="City"
+                      onChangeText={(text) => setCity(text)}
+                      style={styles.inputField}
+                    />
+                    <TextInput
+                      placeholder="State"
+                      onChangeText={(text) => setState(text)}
+                      style={styles.inputField}
+                    />
+                    <TextInput
+                      placeholder="Zip code"
+                      onChangeText={(text) => setZipCode(text)}
+                      style={styles.inputField}
+                    />
+                  </>
+                ) : null
+              }
+              <Text>Enter your card details:</Text>
+              <CardField
+                postalCodeEnabled={true}
+                onCardChange={cardDetails => setCardDetails(cardDetails)}
+                style={styles.cardField}
+              />
 
-          <CardField
-            postalCodeEnabled={true}
-            onCardChange={cardDetails => setCardDetails(cardDetails)}
-            style={styles.cardField}
-          />
-
-          <TouchableOpacity style={styles.button} onPress={handlePay}>
-            <Text style={styles.textStyle}>Pay ${totalAmount/100}.00 with Credit Card</Text>
-          </TouchableOpacity>
-            <View>
-              {isApplePaySupported && (
-                <PlatformPayButton
-                  onPress={handlePay}
-                  type={PlatformPay.ButtonType.Order}
-                  appearance={PlatformPay.ButtonStyle.Black}
-                  borderRadius={4}
-                  style={{
-                    width: '100%',
-                    height: 50,
-                  }}
-                />
-              )}
+              <TouchableOpacity style={styles.button} onPress={handlePay}>
+                <Text style={styles.textStyle}>Pay ${totalAmount/100}.00 with Credit Card</Text>
+              </TouchableOpacity>
+                <View>
+                  {isApplePaySupported && (
+                    <PlatformPayButton
+                      onPress={handlePay}
+                      type={PlatformPay.ButtonType.Order}
+                      appearance={PlatformPay.ButtonStyle.Black}
+                      borderRadius={4}
+                      style={{
+                        width: '100%',
+                        height: 50,
+                      }}
+                    />
+                  )}
+                </View>
+              <TouchableOpacity style={styles.button} onPress={() => setIsModalVisible(false)}>
+                <Text style={styles.textStyle}>Cancel</Text>
+              </TouchableOpacity>
             </View>
-          <TouchableOpacity style={styles.button} onPress={() => setIsModalVisible(false)}>
-            <Text style={styles.textStyle}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-    </StripeProvider>
+          </View>
+        </Modal>
+        </StripeProvider>
     </View>
   );
 }
@@ -218,6 +244,10 @@ export default function App() {
         const [gifterEmail, setGifterEmail] = useState("");
         const [gifterFullName, setGifterFullName] = useState("");
         const [hasPaid, setHasPaid] = useState(false);
+        const [ city, setCity ] = useState('');
+        const [ streetAddress, setStreetAddress ]= useState('');
+        const [ zipCode, setZipCode ] = useState('');
+        const [ state, setState ] = useState('')
 
 
 
@@ -1143,10 +1173,14 @@ useEffect(() => {
             selectedContributors={selectedContacts}
             hasPaid={hasPaid}
             setHasPaid={setHasPaid}
+            setCity={setCity}
+            setStreetAddress={setStreetAddress}
+            setZipCode={setZipCode}
+            setState={setState}
+            physicalBook={physicalBook}
             />
         ) : null
       }
-
 
 
     <Modal visible={isModalVisible} transparent={true}>
@@ -1360,7 +1394,7 @@ useEffect(() => {
 
                   <View style={styles.inputContainer}>
 
-                  <Text style={styles.label}>Prompts for contributors</Text>
+                  <Text style={styles.label}>Prompts for your contributors to write from</Text>
                   <View style={styles.inputContainer}>
                       <TextInput
                           style={styles.input}
@@ -1390,6 +1424,8 @@ useEffect(() => {
                 </View>
 
                   <View style={styles.buttonContainer}>
+
+                    <Text>Choose you Bundl contributors from your existing contacts.</Text>
                 
                     <TouchableOpacity  style={styles.button} onPress={() => setIsContributorsModalVisible(true)}>
                       <Text style={styles.buttonText} >View selected contributors ({tableData.length})</Text>
@@ -1399,7 +1435,7 @@ useEffect(() => {
 
                   <View style={styles.buttonContainer} >
                       <TouchableOpacity style={styles.button} onPress={getContacts}>
-                          <Text style={styles.buttonText}>Select from your phone contacts</Text>
+                          <Text style={styles.buttonText}>View phone contacts</Text>
                       </TouchableOpacity> 
 
                       <View style={styles.container}>
@@ -1411,7 +1447,7 @@ useEffect(() => {
                                       promptAsync();
                                   }}
                               >
-                                  <Text style={styles.buttonText}>Select your Google Contacts</Text>
+                                  <Text style={styles.text}>Sign-in with Google</Text>
                               </TouchableOpacity>
                           ) : (
                               <View>
@@ -1419,7 +1455,7 @@ useEffect(() => {
                                       style={styles.button}
                                       onPress={() => fetchGoogleContacts(response.params.access_token)}
                                   >
-                                      <Text style={styles.buttonText}>View your Google Contacts</Text>
+                                      <Text style={styles.buttonText}>View Google Contacts</Text>
                                   </TouchableOpacity>
                               </View>
                           )}
@@ -1427,7 +1463,7 @@ useEffect(() => {
 
                   </View>
                   <View style={styles.inputContainer}>
-                      <Text style={styles.label}>Welcome Message</Text>
+                      <Text style={styles.label}>Welcome message to contributors</Text>
                       <ScrollView>
                       <TextInput
                           style={styles.textarea}
@@ -1641,6 +1677,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   contactText: {
+    fontSize: 16,
+  },
+  text: {
+    color: 'white',
     fontSize: 16,
   },
 });
