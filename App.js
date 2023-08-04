@@ -325,6 +325,7 @@ export default function App() {
         } else {
           futureDate.setDate(futureDate.getDate() + 7);
         }
+      const [hasUpdated, setHasUpdated] = useState(false);
       
         const onChange = (event, selectedDate) => {
           const currentDate = selectedDate || date;
@@ -948,21 +949,26 @@ useEffect(() => {
             if (isAvailable) {
               try {
                 await MailComposer.composeAsync(mailOptions);
-        
-                // Call the API to update the book
-                const bookResponse = await fetch(`https://yay-api.herokuapp.com/book/${userId}/firstUpdate`, {
-                  method: 'PUT',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    rec_name: recipientFullName,
-                    rec_first_name: recipientFullName.split(' ')[0],
-                    introNote: message,
-                    contributors: contributors  // 'contributors' should be an array of objects with 'email' and 'phone' propertie
-             
-                  }),
-                });
+          
+                if (!hasUpdated) {
+                  // Call the API to update the book
+                  const bookResponse = await fetch(`https://yay-api.herokuapp.com/book/${userId}/firstUpdate`, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      rec_name: recipientFullName,
+                      rec_first_name: recipientFullName.split(' ')[0],
+                      introNote: message,
+                      contributors: contributors,
+                      deliveryDate: deliveryDate,
+                    }),
+                  });
+                  
+                  // Set hasUpdated to true after making the API call
+                  setHasUpdated(true);
+                }
                 
                 // Call the API to update the user
                 const userResponse = await fetch(`https://yay-api.herokuapp.com/users/${userId}/updateUser`, {
@@ -1004,21 +1010,28 @@ useEffect(() => {
             
             if (isAvailable) {
               try {
-                await SMS.sendSMSAsync(phones, message);
+                await MailComposer.composeAsync(mailOptions);
+          
+                if (!hasUpdated) {
+                  // Call the API to update the book
+                  const bookResponse = await fetch(`https://yay-api.herokuapp.com/book/${userId}/firstUpdate`, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      rec_name: recipientFullName,
+                      rec_first_name: recipientFullName.split(' ')[0],
+                      introNote: message,
+                      contributors: contributors,
+                      deliveryDate: deliveryDate,
+                    }),
+                  });
+                  
+                  // Set hasUpdated to true after making the API call
+                  setHasUpdated(true);
+                }
                 
-                // Call the API to update the book
-                const bookResponse = await fetch(`https://yay-api.herokuapp.com/book/${userId}/firstUpdate`, {
-                  method: 'PUT',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    rec_name: recipientFullName,
-                    rec_first_name: recipientFullName.split(' ')[0],
-                    introNote: message,
-                    contributors: contributors  // 'contributors' should be an array of objects with 'email' and 'phone' properties
-                  }),
-                });
                 
                 // Call the API to update the user
                 const userResponse = await fetch(`https://yay-api.herokuapp.com/users/${userId}/updateUser`, {
