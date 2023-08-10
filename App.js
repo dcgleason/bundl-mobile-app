@@ -25,6 +25,7 @@ function PaymentModal({ isModalVisible, setIsModalVisible, totalAmount, gifterEm
   const [cardDetails, setCardDetails] = useState(null);
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+  
 
   useEffect(() => {
     (async function () {
