@@ -296,7 +296,7 @@ export default function App() {
         const [isContributorsModalVisible, setIsContributorsModalVisible] = useState(false);
         const [totalAmount, setTotalAmount] = useState(0);
         const [deliveryDate, setDeliveryDate ] = useState(null);
-
+       const [recipientEmail, setRecipientEmail ] = useState('')
 
         const [userInfo, setUserInfo] = useState(null);
         const [token, setToken] = useState("");
@@ -339,6 +339,8 @@ export default function App() {
 
         // Get the screen's height
 const screenHeight = Dimensions.get('window').height
+
+
 useEffect(() => {
   async function createUserAndBook() {
     try {
@@ -385,13 +387,13 @@ useEffect(() => {
 
 useEffect(() => {
   if (userId) {
-    setMessage(`I am building a book of supportive letters and nice pictures for ${recipientFullName}. It will only take you a minute to write and submit your letter. You can use this link to write in: https://www.givebundl.com/contribute/${userId} and keep an eye out for reminder emails from dan@givebundl.com. Thank you!! Want to make this a special gift for ${recipientFullName.split(' ')[0]}.`);
+    setMessage(`Hello! I am compiling supportive notes and meaningful pictures for ${recipientFullName}. Writing and submit your letter only takes a couple minutes. Sometime before the deadline, in the next 7 days, can you use this link contribute? -->  https://www.givebundl.com/contribute/${userId} I know it would mean a lot to ${recipientFullName.split(' ')[0]}. Also, keep an eye out for reminder emails from dan@givebundl.com. Thank you! Want to make this a special gift for ${recipientFullName.split(' ')[0]}.`);
   }
 }, [userId]);
 
 useEffect(() => {
   if (recipientFullName) {
-    setMessage(`I am building a book of supportive letters and nice pictures for ${recipientFullName}. It will only take you a minute to write and submit your letter. You can use this link to write in: https://www.givebundl.com/contribute/${userId} and keep an eye out for reminder emails from dan@givebundl.com. Thank you!! Want to make this a special gift for ${recipientFullName.split(' ')[0]}.`);
+    setMessage(`Hello! I am compiling supportive notes and meaningful pictures for ${recipientFullName}. Writing and submit your letter only takes a couple minutes. Sometime before the deadline, in the next 7 days can use this link to contribute?  -->  https://www.givebundl.com/contribute/${userId}  I know it would mean a lot to ${recipientFullName.split(' ')[0]}. Also, keep an eye out for reminder emails from dan@givebundl.com Thank you! Want to make this a special gift for ${recipientFullName.split(' ')[0]}.`);
   }
 }, [recipientFullName]);
 
@@ -448,18 +450,7 @@ useEffect(() => {
             // Add your own error handler here
           }
         };
-          const showTableModal = () => {
-            setIsTableModalVisible(true);
-          };
-          
-          const handleTableModalOk = () => {
-            setIsTableModalVisible(false);
-          };
-          
-          const handleTableModalCancel = () => {
-            setIsTableModalVisible(false);
-          };
-          ;
+
 
           const getContacts = async () => {
             const { status } = await Contacts.requestPermissionsAsync();
@@ -540,40 +531,7 @@ useEffect(() => {
       }
       }, []);
 
-      const changeHandler = (event) => {
-      // Passing file data (event.target.files[0]) to parse using Papa.parse
-      console.log('event.target.files[0]', event.target.files[0])
-      Papa.parse(event.target.files[0], {
-        header: true,
-        skipEmptyLines: true,
-        complete: function (results) {
-          const rowsArray = [];
-          const valuesArray = [];
-
-          // Iterating data to get column name and their values
-          results.data.map((d) => {
-            rowsArray.push(Object.keys(d));
-            valuesArray.push(Object.values(d));
-          });
-
-          // Parsed Data Response in array format
-          setParsedData(results.data);
-
-          // Filtered Column Names
-          setTableRows(rowsArray[0]);
-
-          // Filtered Values
-          setValues(valuesArray);
-          console.log('values = '+ values)
-          console.log('parsedData = '+ parsedData)
-
-          // Use the function from state to update AsyncStorage
-          updateLocalStorageFunction(results.data);
-        },
-      });
-      setCsvUploaded(true);
-      };
-
+  
 
       const handleContactSelect = (contact, isSelected) => {
       setSelectedContacts(prevSelectedContacts => {
@@ -622,115 +580,6 @@ useEffect(() => {
       }
       
 
-        function onSendSMS(time, recipient, gifter, to) {
-          const url = 'https://yay-api.herokuapp.com/sms/sendSMS';
-          const data = {
-            time: time,
-            recipient: recipient,
-            gifter: gifter,
-            to: to
-          };
-        
-          fetch(url, {
-            method: 'POST', 
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data), 
-          })
-          .then(response => response.json())
-          .then(data => console.log(data))
-          .catch((error) => {
-            console.error('Error:', error);
-          });
-        }
-
-
-
-
-        const openEmailModal = () => {
-          // Get the emails of people who have not yet contributed
-          const nonContributors = dataSource.filter(student => student.submitted === "No").map(student => student.email);
-          setEmailRecipients(nonContributors.join(', '));
-          console.log('Non-contributors:', nonContributors);
-          setEmailModalVisible(true);
-        };
-        
-      
-      
-        
-        const handleEmailModalCancel = () => {
-          setEmailModalVisible(false);
-        };
-        
-
-        const closeModal = () => {x
-          setOpenGmail(false);
-        };
-
-
-        
-        const renderRightActions = (contact, progress, dragX) => {
-          const trans = dragX.interpolate({
-            inputRange: [0, 50, 100, 101],
-            outputRange: [-20, 0, 0, 1],
-          });
-        };
-        
-
-        const handleClose = () => {
-          setShowModal(false);
-        };
-
-        const handleChangeUpload = (info) => {
-          if (info.file.status !== "uploading") {
-            console.log(info.file, info.fileList);
-
-          }
-          if (info.file.status === "done") {
-            message.success(`${info.file.name} file uploaded successfully`);
-            notification.success({
-              message: 'Picture successfully uploaded',
-              duration: 2,
-            });
-            setPictureSubmitted(true);
-          } else if (info.file.status === "error") {
-            message.error(`${info.file.name} file upload failed.`);
-          }
-        };
-
-  
-        const addtoList = async () => {
-          let objects = [];
-        
-          for (let i = 0; i < values.length; i ++) {
-            const newContact = {
-              id: dataSource.length + i + 1, // This will increment the ID for each new contact
-              name: values[i][1],
-              email: values[i][2],
-              sms: values[i][3], // Changed "address" to "sms"
-            };
-        
-            // Check if a contact with the same name already exists in the dataSource
-            const existingContactIndex = dataSource.findIndex(existingContact => existingContact.name === newContact.name);
-            if (existingContactIndex !== -1) {
-              console.log(`A contact with the name ${newContact.name} already exists.`);
-              // If the new contact has a phone number, update the existing contact's phone number
-              if (newContact.sms) {
-                dataSource[existingContactIndex].sms = newContact.sms;
-              }
-              continue;
-            }
-        
-            objects.push(newContact);
-          }
-        
-          // Add the new contacts to the dataSource state
-          setDataSource(prevDataSource => [...prevDataSource, ...objects]);
-        
-          // Increment the contact count by the number of new contacts
-          setContactCount(prevCount => prevCount + objects.length);
-        };
         
      
         const handleSelectContact = (contact, phoneNumber) => {  // Added phoneNumber as a parameter
@@ -760,77 +609,7 @@ useEffect(() => {
       (contact.name && (contact.phoneNumbers && contact.phoneNumbers.length > 0 || contact.emails && contact.emails.length > 0)) && contact.name.toLowerCase().includes(searchTermMobile.toLowerCase())
     );
 
-        const handleSendEmail = async () => {
-          setIsSendingEmail(true);
-          console.log('email sent')
-          let token = AsyncStorage.getItem('token');
-          if (!token) {
-            // If the user is not signed in, prompt them to do so
-            // You would need to implement this part based on how your sign-in system works
-          } else {
-            // If the user is signed in, send the email
-            const recipientEmails = emailRecipients.split(',').map(email => email.trim());
-        
-            // Decode the JWT
-            const decoded = jwt_decode(token);
-        
-            // Extract the sender's name and username from the decoded JWT
-            const senderName = decoded.name;
-            const senderEmail = decoded.username;
-            const userID = decoded.userId;
-        
-            const response = await fetch('/api/sendEmail', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`, // Use the new token
-              },
-              body: JSON.stringify({
-                senderName,
-                senderEmail,
-                emailSubject, // Use the emailSubject state variable
-                emailBody, // Use the emailBody state variable
-                recipientEmails,
-                userID,
-              }),
-            });
-        
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-        
-            console.log('Email sent successfully');
-            setIsSendingEmail(false);
-            setEmailModalVisible(false);
-            setShowSuccessModal(true);
-        
-            // Create a new date only if lastEmailSent is null
-            let newDate;
-            newDate = moment().toDate();
-            AsyncStorage.setItem('lastEmailSent', newDate);
-        
-              // Update lastEmailed attribute in the backend
-              await fetch(`https://yay-api.herokuapp.com/users/${userID}/lastEmailed`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  lastEmailed: newDate,
-                }),
-              });
-        
-              // Format the new date and update the lastEmailSent state variable
-              setLastEmailSent(moment(newDate).format('MMMM Do, YYYY @ h:mm A'));
-          }
-        };
-        
-
-
-        const onEditStudent = (record) => {
-          setIsEditing(true);
-          setEditingStudent({ ...record });
-        };
+  
         
         const handleEmail = () => {
           submitAndSendWelcomeMessageEmail(tableData);
@@ -888,10 +667,10 @@ useEffect(() => {
           // Calculate the total amount to charge
           let totalAmount = 0;
           if (physicalBook) {
-            totalAmount += 9900; // $99 in cents
+            totalAmount += 17900; // $179 in cents
           }
           if (includeAudio) {
-            totalAmount += 1500; // $15 in cents
+            totalAmount += 1000; // $10 in cents
           }
           
           // If there's a charge, check if the user has paid
@@ -914,10 +693,10 @@ useEffect(() => {
           // Calculate the total amount to charge
           let totalAmount = 0;
           if (physicalBook) {
-            totalAmount += 9900; // $99 in cents
+            totalAmount += 17900; // $179 in cents
           }
           if (includeAudio) {
-            totalAmount += 1500; // $15 in cents
+            totalAmount += 1000; // $10 in cents
           }
           
           // If there's a charge, check if the user has paid
@@ -1065,78 +844,7 @@ useEffect(() => {
           return false;
         }
         
-             
- 
-        // async function submitAndSendWelcomeMessage(contributors) {
-        //   // Calculate the total amount to charge
-        //   let totalAmount = 0;
-        //   if (physicalBook) {
-        //     totalAmount += 9900; // $99 in cents
-        //   }
-        //   if (includeAudio) {
-        //     totalAmount += 1500; // $15 in cents
-        //   }
         
-        //   // If there's a charge, open the payment modal
-        //   if (totalAmount > 0) {
-        //     setTotalAmount(totalAmount);
-        //     setIsPaymentModalVisible(true); // if payment method is sucessfull send messages the same way as if the user diddn't select includeAudio / physicalBook
-        //   } else {
-        //     // If there's no charge, send the welcome messages directly
-        //     sendWelcomeMessages(contributors);
-        //   }
-        // }
-        
-        // async function sendWelcomeMessages(contributors) {
-        //   // Prepare a group email for all contributors with an email address
-        //   const emails = contributors.flatMap(contributor => contributor.emailAddresses || []).map(emailObj => emailObj.value);
-        //   if (emails.length > 0) {
-        //     const mailOptions = {
-        //       recipients: emails,
-        //       subject: 'Welcome to the project!',
-        //       body: 'Thank you for contributing to our project. We appreciate your support!',
-        //     };
-        //     const isAvailable = await MailComposer.isAvailableAsync();
-        //     if (isAvailable) {
-        //       MailComposer.composeAsync(mailOptions).catch(err => console.error('Failed to send email:', err));
-        //     } else {
-        //       console.error('Mail is not available');
-        //     }
-        //   }
-        
-        //           // Prepare a group SMS for all contributors with a phone number
-        //   const phones = contributors
-        //   .map(contributor => contributor.phoneNumber.replace(/\D/g, ''))  // remove non-digit characters
-        //   .filter(phone => phone);
-        //   if (phones.length > 0) {
-        //   const isAvailable = await SMS.isAvailableAsync();
-        //   if (isAvailable) {
-        //     try {
-        //       await SMS.sendSMSAsync(phones, 'Thank you for contributing to our project. We appreciate your support!');
-        //     } catch (err) {
-        //       console.error('Failed to send SMS:', err);
-        //     }
-        //   } else {
-        //     console.error('SMS is not available');
-        //   }
-        //   }
-        // }
-
-        
-          const RenderRightActions = (progress, dragX, onPress) => {
-            const scale = dragX.interpolate({
-              inputRange: [-100, 0],
-              outputRange: [1, 0],
-              extrapolate: 'clamp',
-            });
-            return (
-              <TouchableOpacity onPress={onPress}>
-                <View style={styles.deleteBox}>
-                  <Animated.Text style={[styles.deleteText, { transform: [{ scale }] }]}>Delete</Animated.Text>
-                </View>
-              </TouchableOpacity>
-            );
-          };
 
 
           const handleDelete = (index) => {
@@ -1149,10 +857,10 @@ useEffect(() => {
         // Calculate the total amount to charge
         let totalAmount = 0;
         if (physicalBook) {
-          totalAmount += 9900; // $99 in cents
+          totalAmount += 17900; // $99 in cents
         }
         if (includeAudio) {
-          totalAmount += 1500; // $15 in cents
+          totalAmount += 1000; // $15 in cents
 
         }
 
@@ -1357,7 +1065,7 @@ useEffect(() => {
               <View style={styles.container} contentContainerStyle={{ alignItems: 'center' }} >
               <View style={styles.section}>
                   <Text style={styles.title}>Your Bundl Gift</Text>
-                  <Text style={styles.subtitle}>Write out the recipient of the gift, the people who will contribute to the gift, and the message you will send to the contributors.</Text>
+                  <Text style={styles.subtitle}>Write out the recipient of the gift, the people who will contribute to the email series, and the initial message you will send to the contributors.</Text>
                   <View style={styles.inputContainer}>
                       <Text style={styles.label}>Your full name</Text>
                       <TextInput
@@ -1387,11 +1095,20 @@ useEffect(() => {
                       />
                   </View>
                   <View style={styles.inputContainer}>
+                      <Text style={styles.label}>Recipient's email address</Text>
+                      <TextInput
+                          style={styles.input}
+                          value={recipientEmail}
+                          onChangeText={setRecipientEmail}
+                          placeholder="Your recipient's email address"
+                      />
+                  </View>
+                  <View style={styles.inputContainer}>
 
                   <View style={styles.buttonContainer}>
         
                       <TouchableOpacity style={styles.button} onPress={() => setShow(true)}> 
-                      <Text style={styles.buttonText}>Select Delivery Date </Text>
+                      <Text style={styles.buttonText}>Delivery Date of First Daily Email</Text>
                       </TouchableOpacity>
     
                       {show && (
@@ -1442,19 +1159,16 @@ useEffect(() => {
                   <View style={styles.buttonContainer}>
 
                     <Text>Choose you Bundl contributors from your existing contacts.</Text>
-                
-                    <TouchableOpacity  style={styles.button} onPress={() => setIsContributorsModalVisible(true)}>
-                      <Text style={styles.buttonText} >View selected contributors ({tableData.length})</Text>
-                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={getContacts}>
+                          <Text style={styles.buttonText}>Select from Phone Contacts</Text>
+                      </TouchableOpacity> 
+                   
                     </View>
 
 
                   <View style={styles.buttonContainer} >
-                      <TouchableOpacity style={styles.button} onPress={getContacts}>
-                          <Text style={styles.buttonText}>View phone contacts</Text>
-                      </TouchableOpacity> 
 
-                      <View style={styles.container}>
+                  <View style={styles.container}>
                           {!userInfo ? (
                               <TouchableOpacity
                                   style={styles.button}
@@ -1463,7 +1177,7 @@ useEffect(() => {
                                       promptAsync();
                                   }}
                               >
-                                  <Text style={styles.text}>Sign-in with Google</Text>
+                                  <Text style={styles.text}>Select from Google Contacts</Text>
                               </TouchableOpacity>
                           ) : (
                               <View>
@@ -1476,6 +1190,13 @@ useEffect(() => {
                               </View>
                           )}
                       </View>
+
+                  <TouchableOpacity  style={styles.button} onPress={() => setIsContributorsModalVisible(true)}>
+                      <Text style={styles.buttonText} >View Selected Contacts ({tableData.length})</Text>
+                    </TouchableOpacity>
+                     
+
+                     
 
                   </View>
                   <View style={styles.inputContainer}>
@@ -1498,7 +1219,7 @@ useEffect(() => {
                 value={includeAudio}
                 onValueChange={setIncludeAudio}
             />
-            <Text>Pay $15 to allow your contributors to record audio in addition to text and pictures</Text>
+            <Text>Yes, I want to pay $10 to allow my selected contacts to record audio in addition to writing text and submitting a picture.</Text>
         </View>
 
         <View style={{flexDirection: 'column', alignItems: 'center'}}>
@@ -1506,7 +1227,7 @@ useEffect(() => {
                 value={physicalBook}
                 onValueChange={setPhysicalBook}
             />
-            <Text>Pay $99 to make this e-book a physical book</Text>
+            <Text>Yes, I want to pay $179 make the email series into a physical gift book at the end.</Text>
                   </View>
 
 
