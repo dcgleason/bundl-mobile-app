@@ -1227,7 +1227,7 @@ useEffect(() => {
                 value={physicalBook}
                 onValueChange={setPhysicalBook}
             />
-            <Text>Yes, I want to pay $179 make the email series into a physical gift book at the end.</Text>
+            <Text>Yes, I want to pay $179 put the email series into a physical line haredback gift book at the end.</Text>
                   </View>
 
 
